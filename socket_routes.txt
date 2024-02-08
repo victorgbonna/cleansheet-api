@@ -1,0 +1,271 @@
+from fastapi import WebSocket, WebSocketDisconnect, APIRouter
+from sqlalchemy.orm.exc import NoResultFound
+from ..database import SessionLocal
+from .. import crud, utils
+import json
+
+import traceback
+import sys
+import csv
+import os
+import time
+
+router= APIRouter()
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket]=[]
+    
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+    
+    async def send_personal_message(self, message:str, websocket:WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message:str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+manager= ConnectionManager()
+
+# def start_fetch(self, text_data):
+#     copy_text_data=text_data
+#     print('copy', copy_text_data)
+#     self.send(text_data=json.dumps({
+#         **copy_text_data
+#     }))
+
+
+@router.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data= await websocket.receive_text()
+            print('data', data)
+            text_data_json=json.loads(data)
+            
+            try:
+                possible_leagues=['epl', 'la liga', 'serie a']
+                # 2022-23
+                possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+                
+                message_type = text_data_json['type']
+                print('message_type',message_type)
+
+                if message_type == 'start_fetch':
+                    if not bool(text_data_json) or not bool(text_data_json['league']) or not bool(text_data_json['year']):
+                        # print('not')
+                        return await manager.send_personal_message(
+                            json.dumps({**text_data_json,"client_type":"end_fetch", "label":f"Request body is invalid"}),
+                            websocket   
+                        )
+                    if text_data_json['league'] not in possible_leagues:
+                        # print('req ',text_data_json.league)
+                        
+                        return await manager.send_personal_message(
+                            json.dumps({**text_data_json,"client_type":"end_fetch", "label":f"League is invalid"}),
+                            websocket   
+                        )
+                    
+                    if text_data_json['year'] not in possible_years:
+                        print('not here')
+                        return await manager.send_personal_message(
+                            json.dumps({**text_data_json,"client_type":"end_fetch", "label":f"Year is invalid"}),
+                            websocket   
+                        )
+                    league_input=text_data_json['league']
+                    year_input=text_data_json['year']
+                
+                    
+                    db = SessionLocal()
+                    season= crud.find_season_by_leagueXyear(db=db, league=league_input, year=year_input)
+                    
+                    if season is not None:
+                        return
+                        serializer= SeasonSerializer(season)
+                        async_to_sync(self.channel_layer.group_send)(
+                            text_data_json['id'], 
+                            { 
+                                **text_data_json,"client_type":"progress_updated",  "label":"Fetching team results",
+                                "percent":"40%"
+                            }
+                        )
+                        csv_data_for_that_season=read_csv(league_input.upper()+' '+year_input+' cleansheet stats')
+                        # return Response({'data':serializer.data, 'csv_data':csv_data_for_that_season}, status=status.HTTP_200_OK)
+                        return async_to_sync(self.channel_layer.group_send)(
+                            text_data_json['id'], 
+                            { 
+                                **text_data_json,"client_type":"done_fetch",  "label":"Data is gotten",
+                                'csv_data':csv_data_for_that_season, "data":serializer.data
+                            }
+                        )
+                    else:                       
+                        print('DOES NOT EXIST')
+                        season_input=year_input.replace('-', '–')
+                        # async_to_sync(self.channel_layer.group_send)(
+                        #     text_data_json['id'], 
+                        #     { 
+                        #         **text_data_json,"client_type":"progress_updated",  
+                        #         "label":f"Fetching teams in the {year_input} {league_input} season","percent":"10%"
+                        #     }
+                        # )
+                        await manager.send_personal_message(
+                            json.dumps({ 
+                                **text_data_json,"client_type":"progress_updated",  
+                                "label":f"Fetching teams in the {year_input} {league_input} season","percent":"10%"
+                            }),
+                            websocket   
+                        )
+                        print('i AM HERE')
+                        # return
+                        teamsXfixtures=utils.get_teams_for_that_season(season_input, league_input)
+                        participating_teams= teamsXfixtures['teams']
+                        participating_teams_summary=[team['team_name'] for team in participating_teams]
+                        await manager.send_personal_message(
+                            json.dumps({ 
+                                **text_data_json,"client_type":"show_teams",  
+                                "label":f"Fetching matches",
+                                "percent":'%',
+                                "participating_teams":participating_teams_summary
+                            }),
+                            websocket   
+                        )
+                        # length_per_team= 100/len(participating_teams[:3])
+
+                        teams_in_fixtures_for_duplicates=[]
+                        match_summaries=[]
+                        non_wiki_teams=[]
+                        print('Before loop')
+                        
+                # print('participating_teams- ',participating_teams)
+                        for index,participating_team_dict in enumerate(participating_teams[:5]):
+                            # if index==0:
+                            #     print('indexing catches')
+                            #     next_team=''
+                            #     try:
+                            #         next_team=participating_teams[index+1]['team_name']+' with others'
+                            #     except:
+                            #         pass
+
+                            print('pased here-',index)
+                            # return
+                            return_dict=utils.get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates)
+                            print('return_dict -', return_dict)
+                            if return_dict["non_wiki_team"] is not None:
+                                non_wiki_teams.append(return_dict["non_wiki_team"])
+                            print('passed non_wiki')
+                            if return_dict["fixture_in_duplicates"] is not None:
+                                teams_in_fixtures_for_duplicates.append(return_dict["fixture_in_duplicates"])
+                            print('passed dupli')
+                            if return_dict["match_summary"] is not None:
+                                match_summaries.append(return_dict["match_summary"])
+                            print('passed match')
+                        return
+                        await manager.send_personal_message(
+                            json.dumps({ 
+                                **text_data_json,"client_type":"progress_updated",  
+                                "label":f"Finalizing data",
+                                "percent":"98%"
+                            }),
+                            websocket   
+                        )
+                        
+                        assemble_matches=utils.get_non_wiki_teams_versus(non_wiki_teams)
+                        
+                        
+                        isComplete=True
+                        remainingFixtures=[]
+                        print('pas nnd')
+                        if len(non_wiki_teams)>1:
+                            isComplete=False
+                            remainingFixtures=assemble_matches
+                        overFilled=len(match_summaries)-380
+
+                        body={**text_data_json, "isComplete":isComplete, "remainingFixtures":remainingFixtures, "overFilled":overFilled}
+
+                        # serializer= SeasonSerializer(data=body)
+                        # if serializer.is_valid():
+                        #     serializer.save()
+                        csv_name=league_input.upper()+' '+year_input+' cleansheet stats'
+                        utils.convert_to_csv(csv_name, match_summaries)
+                        
+                        await manager.send_personal_message(
+                            { 
+                                **text_data_json,"client_type":"done_fetch",  "label":"Data is gotten",
+                                'csv_data':match_summaries, "data":serializer.data
+                            },
+                            websocket   
+                        )
+                                                
+                        # return Response({'data':serializer.data, 'csv_data':clean_sheet_data}, status=status.HTTP_201_CREATED)
+                        # return Response({"error":{"message":"Not found"}}, status=status.HTTP_404_NOT_FOUND)
+                    # {str(serializer.data['id'])}
+                    # html_alert_message = f"<p>There might be duplicates in this data</p><p>ID: <strong></strong></p><p>League: <strong>{str(league_input)}</strong></p><p>Year: <strong>{str(year_input)}</strong></p>"
+
+                    # send_email('New cleansheet added!!',html_alert_message)
+                    # return async_to_sync(self.channel_layer.group_send)(
+                    #     text_data_json['id'], 
+                    #     { **text_data_json,"client_type":"done_fetch", "label":f"We are good to go"}
+                    # )
+                    # async_to_sync(self.channel_layer.group_send)(
+                    #     text_data_json['id'], 
+                    #     {"type":"start_fetch", **text_data_json, "label":f"Fetching {year_input} {league_input} season", "percent":"5%"}
+                    # )
+                    # async_to_sync(self.channel_layer.group_send)(
+                    #     text_data_json['id'], 
+                    #     {"type":"start_fetch", **text_data_json,"label":f"Fetching {year_input} {league_input} season", "percent":"5%"}
+                    # )
+                    # "label":"Fetching data", "percent":"0"
+                    # self.start_fetch(loading_inputs)
+            except Exception as e:
+                print(e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                line_number = exc_tb.tb_lineno  # Get the line number where the exception occurred
+                print("An error occurred on line:", line_number)
+                await manager.send_personal_message(
+                    json.dumps({ **text_data_json,"client_type":"end_fetch", "label":f"There is an error, -{e} on line {line_number}"}),
+                    websocket   
+                )
+                # async_to_sync(self.channel_layer.group_send)(
+                #     text_data_json['id'], 
+                #     { **text_data_json,"client_type":"end_fetch", "label":f"There is an error, -{e} on line {line_number}"}
+                # )
+                # return
+
+
+                
+                # await manager.send_personal_message(json.dumps({
+                #     "client_type":"connect",
+                #     "message":"Good to go",
+                #     **text_data_json
+                # }), websocket)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)    
+        # await manager.broadcast
+
+# class Season(BaseModel):
+#     league : str= Field(min_length=1)
+#     year : str = Field(min_length=1, max_length=20)
+    # isComplete= Column(Boolean)
+    # overFilled= Column(Integer)
+    # remainingFixtures = Column(JSON)
+
+# def get_users(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.User).offset(skip).limit(limit).all()
+
+
+
+# app.websocket_route("/ws/{client_id}")(websocket_endpoint)
+        # @app.post('/')
+# def create_book(season:Season, db: Session=Depends(get_db)):
+    # season_model= Season()
+    # season_model.year, season_model.league=season.year, season.league
+
+    # db.add(season_model)
+    # db.commit()
+    # return season

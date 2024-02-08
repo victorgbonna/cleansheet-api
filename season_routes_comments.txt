@@ -1,0 +1,42 @@
+# get the fixtures and scores
+        fixtures=[]
+        teams_in_fixtures_for_duplicates=[]
+        # fixtures_container= season_page_to_soup.find('div', class_="noresize overflowbugx")
+        # fixtures_table= fixtures_container.find('table', class_="wikitable plainrowheaders")
+
+        # away_teams_tag, *home_teamsXscores_tag= fixtures_table.find_all('tr')
+
+        # away_teams= away_teams_tag.find_all('th', width="28")
+
+        # for home_teamXscore_select in home_teamsXscores_tag:
+        #     # for home team and score
+        #     home_team= home_teamXscore_select.find('th').find('a')
+        #     scores= home_teamXscore_select.find_all('td')
+            
+        #     for index,away_team_select in enumerate(away_teams):
+        #         away_team=away_team_select.find('a')
+        #         away_team_title=away_team['title']
+        #         away_team_shortcut=away_team.text
+
+        #         # check for fixtures to avoid duplicates
+        #         h2h=home_team['title']+' vs '+away_team_title
+        #         # print(h2h)
+        #         if(h2h in teams_in_fixtures_for_duplicates):
+        #             continue
+        #         # print(scores)
+        #         matchday_score=scores[index].text
+        #         # print(matchday_score)
+        #         if(len(matchday_score.strip())<=1):
+        #             matchday_home_goals,matchday_away_goals=['–','–']
+        #             continue
+        #         else:
+        #             matchday_home_goals, matchday_away_goals= matchday_score.strip().split('–')
+        #         # print(home_team['title'], away_team_shortcut,away_team_title, matchday_home_goals, matchday_away_goals, matchday_score)
+        #         teams_in_fixtures_for_duplicates.append(h2h)
+
+        #         fixtures.append({
+        #             'home_team':home_team['href'].replace('_',' '), 'away_team': away_team['href'].replace('_', ' '), 'home_goals':matchday_home_goals, 
+        #             'away_goals':matchday_away_goals,'score_line':matchday_score.strip(), 'total_goals':int(matchday_home_goals)+int(matchday_away_goals)
+        #         })
+        
+        return {'teams':participating_teams}
