@@ -160,7 +160,7 @@ def get_teams_for_that_season(season_input, comp):
         table_section= season_page_to_soup.find('span', attrs={"id":"League_table"}).find_next('table')
         teams_table_data = [th for th in season_page_to_soup.find_all('th') if len(th.contents) and len(th.contents)!=0 and th.find('a') == th.contents[0]]
         # teams_table_data = [th for th in season_page_to_soup.find_all('th')]
-        print(teams_table_data[0])
+        # print(teams_table_data[0])
         # teams_table_data= season_page_to_soup.find_all('th', lambda tag: tag.findChild('a') == tag.contents[0])
         # print(teams_table_data)
         participating_teams=[]
@@ -250,16 +250,18 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
             # print('return - ', return_dict)
         
         match_summary_for_team=[]
+        fixtures_for_duplicates_for_team=[]
         for event in tags_after_announcement[:38]:
             event_table=event.find('table')
 
             h2h= [team.find('b').text.strip() for team in event_table.find_all('td', attrs={'class':'vcard attendee'})]
             h2h_to_string=' vs '.join(h2h)
             # print(h2h)
+
             if(h2h_to_string in teams_in_fixtures_for_duplicates):
                 continue
             # first td is the match date and time
-            return_dict={**return_dict, "fixture_in_duplicates":h2h_to_string}
+            # return_dict={**return_dict, "fixture_in_duplicates":h2h_to_string}
             # teams_in_fixtures_for_duplicates.append(h2h_to_string)
             match_date_time_tag= run_expression_as_function('''event_table.find('tr').find('td', attrs={'style':"width:19%"})''', {"event_table":event_table}, 1)
             # print('return except- ', return_dict)
@@ -372,13 +374,13 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
                 **match_goals_collection
             }
             match_summary_for_team.append(match_summary)
-
+            fixtures_for_duplicates_for_team.append(h2h_to_string)
             # print(match_summary)
             # clean_sheet_data.append(match_summary)
             # match_summary={}
             # print('\n')
         # print('\n')
-        return_dict={**return_dict, "match_summary":match_summary_for_team}
+        return_dict={**return_dict, "match_summary":match_summary_for_team, "fixture_in_duplicates":fixtures_for_duplicates_for_team}
         return return_dict
     except Exception as E:
         # clean_sheet_data.append({**})

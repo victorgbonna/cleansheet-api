@@ -24,4 +24,25 @@ def save_season(db: Session, league:str, year:str, isComplete: bool, overFilled:
     db.refresh(new_season)
     return db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()
 
+def update_season(db: Session, league:str, year:str, isComplete: bool, overFilled: int, remainingFixtures: list, csvFileLink:str):
+    try:
+        season_exists= db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()
+        season_exists.csvFileLink=csvFileLink
+        season_exists.isComplete =isComplete
+        season_exists.overFilled =overFilled
+        season_exists.remainingFixtures = remainingFixtures
+        db.commit()
+        return "done"
+    except NoResultFound:
+        return None
+
+def update_season_url(db: Session, league:str, year:str, csvFileLink:str):
+    try:
+        season_exists= db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()
+        season_exists.csvFileLink=csvFileLink
+        db.commit()
+        return "done"
+    except NoResultFound:
+        return None
+
 

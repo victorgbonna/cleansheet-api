@@ -140,13 +140,13 @@ def get_league_info(season_data: schemas.Season):
         db = SessionLocal()
         season_exists= crud.find_season_by_leagueXyear(db=db, league=league_input, year=year_input)
         if season_exists is not None:
-            csv_data_for_that_season=utils.read_csv(league_input.upper()+' '+year_input+' cleansheet stats')
+            # csv_data_for_that_season=utils.read_csv(league_input.upper()+' '+year_input+' cleansheet stats')
             
             return {
                 "message":"Message successful",
                 "data":{
-                    "body":season_exists,
-                    "csv_data":csv_data_for_that_season
+                    "body":season_exists
+                    #, "csv_data":csv_data_for_that_season
                 }
             }
         else:
@@ -207,11 +207,11 @@ def get_new_league_info(season_data: schemas.NewSeason):
             return_dict=utils.get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates)
             # print('return_dict -', return_dict)
             if return_dict["non_wiki_team"] is not None:
-                # print('non_wiki_team', return_dict["non_wiki_team"])
+                print('non_wiki_team', return_dict["non_wiki_team"])
                 non_wiki_teams.append(return_dict["non_wiki_team"])
             print('passed non_wiki')
             if return_dict["fixture_in_duplicates"] is not None:
-                teams_in_fixtures_for_duplicates.append(return_dict["fixture_in_duplicates"])
+                teams_in_fixtures_for_duplicates+=return_dict["fixture_in_duplicates"]
             print('passed dupli')
             if return_dict["match_summary"] is not None:
                 match_summaries+=return_dict["match_summary"]
@@ -245,7 +245,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
         body={"league":season_data['league'], "year": season_data['year'], "isComplete":isComplete, "remainingFixtures":remainingFixtures, "overFilled":overFilled}
         
         csv_name=season_data['league']+' '+season_data['year']+' cleansheet stats'
-        csv_data_for_that_season=utils.convert_to_csv(csv_name,match_summaries)
+        # csv_data_for_that_season=utils.convert_to_csv(csv_name,match_summaries)
         new_season=crud.save_season(db=db, league= body['league'], year=body['year'], isComplete=body['isComplete'], overFilled=body['overFilled'], remainingFixtures=body['remainingFixtures'])
         # print('new season-', new_season)
 
@@ -259,7 +259,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
             "message":"Data saved",
             "data":{
                 "body": new_season,
-                "csv_data":csv_data_for_that_season
+                "csv_data":match_summaries  
             }
         }
         # else:
@@ -299,25 +299,87 @@ def update_league_info(season_data: schemas.UpdateSeason):
                 content={"error":{"message": "Invalid year data"}}
             )    
         # league_input, year_input= season_data['league'], season_data['year']
-        add_csv_file=season_data["add_csv_file"]
+        # add_csv_file=season_data["add_csv_file"]
         league_input, year_input= season_data['league'], season_data['year']
         
         
         db = SessionLocal()
-        season_exists= crud.find_season_by_leagueXyear(db=db, league=league_input, year=year_input)
-        if season_exists is None:
+        csvFileLink=season_data.add_csv_file
+        isComplete = season_data.isComplete
+        overFilled = season_data.overFilled
+        remainingFixtures = season_data.remainingFixtures
+
+        season_exists_updated= crud.update_season(
+            db=db, league=league_input, year=year_input, 
+            isComplete=isComplete, overFilled=overFilled, 
+            remainingFixtures=remainingFixtures, csvFileLink=csvFileLink
+        )
+        if season_exists_updated is None:
             return JSONResponse(
                 status_code=400,
                 content={"error":{"message": "League not found"}}
             ) 
-        csv_file_name=league_input.upper()+' '+year_input+' cleansheet stats'
-        utils.modify_csv(add_csv_file, csv_file_name)
-        season_exists.isComplete = season_data.isComplete
-        season_exists.overFilled = season_data.overFilled
-        season_exists.remainingFixtures = season_data.remainingFixtures
+        return {
+            "message":"Data saved",
+            "data":{
+                "body": season_data
+                # ,"csv_data":csv_data_for_that_season
+            }
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"error":{"message": "Something went wrong"}}
+        ) 
+    
 
-        db.commit()
+@router.patch("/update-league-csv")
+def update_season_csv_url(season_data: schemas.UpdateSeasonUrl):
+    season_data=json.loads(season_data.model_dump_json())
+    try:
+        possible_leagues=['epl', 'la liga', 'serie a']
+        # 2022-23
+        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+        if not bool(season_data) or not bool(season_data['league']) or not bool(season_data['year']):
+            return JSONResponse(
+                status_code=400,
+                content={"error":{"message": "Invalid data"}}
+            )    
+        if season_data['league'] not in possible_leagues:
+            return JSONResponse(
+                status_code=400,
+                content={"error":{"message": "Invalid league data"}}
+            )     
+            # print('req ',season_data['league'])
+                
+        if season_data['year'] not in possible_years:
+            return JSONResponse(
+                status_code=400,
+                content={"error":{"message": "Invalid year data"}}
+            )    
+        # league_input, year_input= season_data['league'], season_data['year']
+        # add_csv_file=season_data["add_csv_file"]
+        league_input, year_input= season_data['league'], season_data['year']
+        
+        
+        db = SessionLocal()
+        csvFileLink=season_data['add_csv_file']
 
+        season_exists_updated= crud.update_season_url(
+            db=db, league=league_input, year=year_input, csvFileLink=csvFileLink
+        )
+        if season_exists_updated is None:
+            return JSONResponse(
+                status_code=400,
+                content={"error":{"message": "League not found"}}
+            ) 
+        return {
+            "message":"Data saved",
+            "data":{
+                "body": season_data
+                # ,"csv_data":csv_data_for_that_season
+            }
+        }
     except Exception as e:
         return JSONResponse(
             status_code=400,

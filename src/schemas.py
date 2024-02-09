@@ -8,7 +8,10 @@ class NewSeason(Season):
     participating_teams: list= Field(min_length=1)
 
 class UpdateSeason(Season):
-    add_csv_file: list= Field(min_length=1)
+    add_csv_file: str= Field(min_length=1)
     isComplete: bool= Field(default=False)
     overFilled: int = Field()
     remainingFixtures: list= Field(min_length=1)
+
+class UpdateSeasonUrl(Season):
+    add_csv_file: str= Field(min_length=1)

@@ -5,9 +5,10 @@ class Season(Base):
     __tablename__ = "seasons"
 
     id = Column(Integer, primary_key=True, index=True)
-    league = Column(String, index=True)
-    year = Column(String, index=True)
+    league = Column(String)
+    year = Column(String)
     isComplete= Column(Boolean, default=True)
+    csvFileLink= Column(String, default='')
     overFilled= Column(Integer, default=0)
     remainingFixtures = Column(JSON, default=[])
 
