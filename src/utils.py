@@ -13,6 +13,9 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import cloudinary.uploader
+import cloudinary.api
+import json,os
 
 # Replace these variables with your Gmail account details
 EMAIL = 'victorgbonna@gmail.com'
@@ -102,7 +105,37 @@ def read_csv(csv_file):
         return "File not found."
     except Exception as e:
         return f"An error occurred: {str(e)}"
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUD_NAME'),
+    api_key=os.getenv('CLOUD_API_KEY'),
+    api_secret=os.getenv('CLOUD_API_SECRET')
+)
+def update_file_in_cloudinary(public_id, updated_season_data):
+    updated_data = json.dumps(updated_season_data)
+    upload_result = cloudinary.uploader.upload(updated_data, resource_type="raw", public_id=public_id)
+    return upload_result
     
+def read_from_cloudinary(public_id):
+    json_response = cloudinary.api.resource(public_id, resource_type="raw")
+    season_data_in_json = json_response['content']
+    season_data = json.loads(season_data_in_json)
+    return season_data
+
+def save_to_cloudinary(data):
+    # json_string = json.dumps(data)
+
+    json_string = {"key1": "value1", "key2": 3.14}
+    json_data_string = json.dumps('./csv/epl_2022–23.csv')     
+    print('in this')
+
+    upload_result = cloudinary.uploader.upload(
+        # data
+        'csv/epl_2022–23.csv'
+    )
+    print(upload_result)
+    cloud_file_name = upload_result['url']
+    return [cloud_file_name, upload_result['public_id']]
 def convert_to_csv(csv_name, comp):
     folder_name = 'csv'
     current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -111,7 +144,7 @@ def convert_to_csv(csv_name, comp):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    csv_filename = os.path.join(folder_path, csv_name)
+    csv_filename = os.path.join(csv_name)
     
     # Writing to a CSV file
     with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
@@ -123,7 +156,7 @@ def convert_to_csv(csv_name, comp):
 
         # Write rows
         writer.writerows(comp)
-    return comp
+    return csv_filename
 
 def get_teams_for_that_season(season_input, comp):
     # https://en.wikipedia.org/wiki/2011%E2%80%9312_La_Liga

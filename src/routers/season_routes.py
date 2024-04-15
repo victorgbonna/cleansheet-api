@@ -140,13 +140,15 @@ def get_league_info(season_data: schemas.Season):
         db = SessionLocal()
         season_exists= crud.find_season_by_leagueXyear(db=db, league=league_input, year=year_input)
         if season_exists is not None:
-            # csv_data_for_that_season=utils.read_csv(league_input.upper()+' '+year_input+' cleansheet stats')
+            csv_data_for_that_season= season_exists.fixtures
+            del season_exists.fixtures
+            # utils.read_from_cloudinary(season_exists.cloudPublicId)
             
             return {
                 "message":"Message successful",
                 "data":{
                     "body":season_exists
-                    #, "csv_data":csv_data_for_that_season
+                    ,"csv_data":csv_data_for_that_season
                 }
             }
         else:
@@ -243,10 +245,19 @@ def get_new_league_info(season_data: schemas.NewSeason):
 
         
         body={"league":season_data['league'], "year": season_data['year'], "isComplete":isComplete, "remainingFixtures":remainingFixtures, "overFilled":overFilled}
+        # csv_name= season_data['league']+'_'+season_data['year']+'.csv'
         
-        csv_name=season_data['league']+' '+season_data['year']+' cleansheet stats'
-        # csv_data_for_that_season=utils.convert_to_csv(csv_name,match_summaries)
-        new_season=crud.save_season(db=db, league= body['league'], year=body['year'], isComplete=body['isComplete'], overFilled=body['overFilled'], remainingFixtures=body['remainingFixtures'])
+        # season_file_name=utils.convert_to_csv(csv_name,match_summaries)
+        # print('seas', season_file_name)
+        # cloud_file=utils.save_to_cloudinary(season_file_name)
+        
+        new_season=crud.save_season(db=db, 
+                                    league= body['league'], year=body['year'], isComplete=body['isComplete'], 
+                                    overFilled=body['overFilled'], remainingFixtures=body['remainingFixtures'],
+                                    fixtures=match_summaries
+                                    # cloudPublicId=cloud_file[1], csvFileLink=cloud_file[0]
+                                )
+        del new_season.fixtures
         # print('new season-', new_season)
 
         # if not isComplete:
@@ -276,6 +287,9 @@ def get_new_league_info(season_data: schemas.NewSeason):
 # ["seasons/all", "seasons/search-league-info", "seasons/get-league-info", "seasons/new-league-info", "seasons/get-new-league-info"]  
 @router.put("/update-league-info")
 def update_league_info(season_data: schemas.UpdateSeason):
+    # utils.update_file_in_cloudinary(your_public_id, updated_data)
+    # instead edit the fixtures
+    #then complete the rest
     season_data=json.loads(season_data.model_dump_json())
     try:
         possible_leagues=['epl', 'la liga', 'serie a']
@@ -335,6 +349,7 @@ def update_league_info(season_data: schemas.UpdateSeason):
 
 @router.patch("/update-league-csv")
 def update_season_csv_url(season_data: schemas.UpdateSeasonUrl):
+    # utils.update_file_in_cloudinary(your_public_id, updated_data)
     season_data=json.loads(season_data.model_dump_json())
     try:
         possible_leagues=['epl', 'la liga', 'serie a']

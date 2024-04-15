@@ -4,12 +4,14 @@ from . import models, schemas
 
 def get_seasons(db: Session, filterBy):
     if not filterBy:
-        return db.query(models.Season).all()
-    if filterBy=="incomplete":
-        return db.query(models.Season).filter(models.Season.isComplete==False).all()
-    if filterBy=="over-complete":
-        return db.query(models.Season).filter(models.Season.overFilled==False).all()
-
+        seasons=db.query(models.Season).all() 
+    elif filterBy=="incomplete":
+        seasons= db.query(models.Season).filter(models.Season.isComplete==False).all()
+    elif filterBy=="over-complete":
+        seasons=db.query(models.Season).filter(models.Season.overFilled==False).all()
+    seasons_exc_fixtures=[{column.name: getattr(row, column.name) for column in row.__table__.columns if column.name!="fixtures"} for row in seasons]
+    # seasons_exc_fixtures=[{k: v for k, v in row.items() if k != 'fixtures'} for row in seasons_exc_fixtures]
+    return seasons_exc_fixtures
 def find_season_by_leagueXyear(db: Session, league:str, year:str):
     try:
         season=db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()
@@ -17,8 +19,9 @@ def find_season_by_leagueXyear(db: Session, league:str, year:str):
     except NoResultFound:
         return None
 
-def save_season(db: Session, league:str, year:str, isComplete: bool, overFilled: int, remainingFixtures: list):
-    new_season = models.Season(year=year, league=league, isComplete=isComplete, overFilled=overFilled, remainingFixtures=remainingFixtures)
+def save_season(db: Session, league:str, year:str, isComplete: bool, overFilled: int, remainingFixtures: list, fixtures: list):
+    print(len(fixtures))
+    new_season = models.Season(year=year, league=league, isComplete=isComplete, overFilled=overFilled, remainingFixtures=remainingFixtures, fixtures=fixtures)
     db.add(new_season)
     db.commit()
     db.refresh(new_season)

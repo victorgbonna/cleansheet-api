@@ -9,8 +9,10 @@ class Season(Base):
     year = Column(String)
     isComplete= Column(Boolean, default=True)
     csvFileLink= Column(String, default='')
+    cloudPublicId= Column(String, default='')
     overFilled= Column(Integer, default=0)
     remainingFixtures = Column(JSON, default=[])
+    fixtures = Column(JSON, default=[])
 
     def __str__(self):
         return self.year+'-'+self.league
