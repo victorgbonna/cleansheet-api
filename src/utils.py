@@ -399,9 +399,10 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
                         match_goals_collection['min 76-90+'+who_scored+'goals']+=1
                         match_goals_collection['min 76-90+ goals']+=1
                     
+                    # some gameweeks are faulty, so I want to select just 1
             match_summary={
                 'home_team':home_team.strip(),'away_team':away_team, 'match_period':match_period,
-                'game_week':game_week,'match_date':match_date,'match_time':match_time,
+                'game_week':[i for i in game_week if i.isdigit()][0],'match_date':match_date,'match_time':match_time,
                 'stadium':stadium,'score_line':score_line,'total_goals':int(home_goals)+ int(away_goals),
                 'away_goals':away_goals, 'home_goals':home_goals, 'referee': referee,
                 **match_goals_collection
