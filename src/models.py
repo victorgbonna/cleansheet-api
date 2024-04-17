@@ -13,6 +13,7 @@ class Season(Base):
     overFilled= Column(Integer, default=0)
     remainingFixtures = Column(JSON, default=[])
     fixtures = Column(JSON, default=[])
+    noOfVisits= Column(Integer, default=1)
 
     def __str__(self):
         return self.year+'-'+self.league

@@ -76,6 +76,7 @@ def search_league_info(season_data: schemas.Season):
 
         print('season_exists ', season_exists)
         if season_exists is not None:
+            crud.update_season_visits(db=db, league=league_input, year=year_input)
             return {
                 "message":"Message successful",
                 "data":{
@@ -157,7 +158,7 @@ def get_league_info(season_data: schemas.Season):
                 content={"error":{"message": "League info not found"}}
             )    
     except Exception as e:
-        # print(f"Error: {e}")
+        print(f"Error: {e}")
         # print("An error occurred on line:", line_number)
         # traceback.print_exc()  # Print the traceback iformation
         # return return_on_error
@@ -242,7 +243,8 @@ def get_new_league_info(season_data: schemas.NewSeason):
             isComplete=False
             remainingFixtures=non_wiki_teams
         overFilled=len(match_summaries)-380
-
+        # supposed_total_matches=(len(participating_teams)*(len(participating_teams)-1))/2
+        # overFilled=len(match_summaries)-(supposed_total_matches*2)
         
         body={"league":season_data['league'], "year": season_data['year'], "isComplete":isComplete, "remainingFixtures":remainingFixtures, "overFilled":overFilled}
         # csv_name= season_data['league']+'_'+season_data['year']+'.csv'

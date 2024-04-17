@@ -27,6 +27,19 @@ def save_season(db: Session, league:str, year:str, isComplete: bool, overFilled:
     db.refresh(new_season)
     return db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()
 
+def update_season_visits(db: Session, league:str, year:str):
+    try:
+        season_exists= db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()
+        if season_exists.noOfVisits is not None:
+            season_exists.noOfVisits+=1
+        else:
+            season_exists.noOfVisits=1
+        db.commit()
+        return "done"
+    except NoResultFound:
+        return None
+
+
 def update_season(db: Session, league:str, year:str, isComplete: bool, overFilled: int, remainingFixtures: list, csvFileLink:str):
     try:
         season_exists= db.query(models.Season).filter(models.Season.league == league, models.Season.year == year).first()

@@ -254,13 +254,17 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
         # pattern = re.compile(r'The league fixtures were announced on', re.IGNORECASE)
         try:
             announcement_collection=participating_team_soup.find_all(lambda tag: tag.name == 'p' and 'league fixtures' in tag.text.lower())
+            print(announcement_collection)
+            print([len(tag) for tag in announcement_collection])
             announcement=[]
             if len(announcement_collection)>1:
-                announcement=[tag for tag in announcement_collection if len(tag.text)<80]
+                announcement=[tag for tag in announcement_collection if len(tag.text)<200]
+                # epl 2018 19 needed len adjustments, from 80 to 90 both 2017 18
             # print('tag length ', len(announcement))
             # print('tag', announcement)
 
             if len(announcement)==0:
+                print('no announcement')
                 # print('is none')
                 announcement= participating_team_soup.find('span',id="Results_by_round").parent
             else:
@@ -399,6 +403,7 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
                         match_goals_collection['min 76-90+'+who_scored+'goals']+=1
                         match_goals_collection['min 76-90+ goals']+=1
                     
+                    # some gameweeks are faulty, so I want to select just 1
             match_summary={
                 'home_team':home_team.strip(),'away_team':away_team, 'match_period':match_period,
                 'game_week':game_week,'match_date':match_date,'match_time':match_time,
@@ -477,6 +482,7 @@ def get_cleansheets(season, comp, id):
                 announcement=participating_team_soup.find(lambda tag: tag.name == 'p' and 'league fixtures' in tag.text.lower())
                 if announcement is None:
                     # print('is none')
+                    
                     announcement= participating_team_soup.find('span',id="Results_by_round").parent
                     # if announcement is None:
                     #     announcement
