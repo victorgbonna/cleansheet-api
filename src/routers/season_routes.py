@@ -168,6 +168,7 @@ def get_league_info(season_data: schemas.Season):
             error={"message": "Something went wrong"}
         ) 
 
+
 @router.post("/get-new-league-info")
 def get_new_league_info(season_data: schemas.NewSeason):
     season_data= json.loads(season_data.model_dump_json())
@@ -207,7 +208,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
         for index,participating_team_dict in enumerate(participating_teams):
             print('pased here-',index)
             # return
-            return_dict=utils.get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates)
+            return_dict=utils.get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates, league=season_data['league'])
             # print('return_dict -', return_dict)
             if return_dict["non_wiki_team"] is not None:
                 print('non_wiki_team', return_dict["non_wiki_team"])

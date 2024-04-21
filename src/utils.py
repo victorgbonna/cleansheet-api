@@ -235,8 +235,13 @@ def run_expression_as_function(expression, variable=None, line_number="0", retur
         traceback.print_exc()  # Print the traceback iformation
         return return_on_error
 
-def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates):
+def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates, league):
     team_name=participating_team_dict['team_name']        
+    league_name="Premier_League"
+    if league=="la liga":
+        league_name=="La_Liga"
+    elif league=="serie a":
+        league_name=="Serie_A"    
     season_url=participating_team_dict['team_url_season_link']
     # # check for fixtures to avoid duplicates
     # h2h=home_team['title']+' vs '+away_team_title
@@ -257,18 +262,31 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
             print(announcement_collection)
             print([len(tag) for tag in announcement_collection])
             announcement=[]
-            if len(announcement_collection)>1:
-                announcement=[tag for tag in announcement_collection if len(tag.text)<200]
-                # epl 2018 19 needed len adjustments, from 80 to 90 both 2017 18
-            # print('tag length ', len(announcement))
-            # print('tag', announcement)
+            announcement_alt= participating_team_soup.find('span',attrs={'class':'mw-headline', 'id':league_name})
+            announcement=announcement_alt.parent
+            # if len(announcement_collection)>1:
+            #     announcement=[tag for tag in announcement_collection if len(tag.text)<300]
+            #     # epl 2018 19 needed len adjustments, from 80 to 90 both 2017 18
+            # # print('tag length ', len(announcement))
+            # # print('tag', announcement)
 
-            if len(announcement)==0:
-                print('no announcement')
-                # print('is none')
-                announcement= participating_team_soup.find('span',id="Results_by_round").parent
-            else:
-                announcement=announcement[0]
+            # if len(announcement)==0:
+            #     print('no announcement')
+            #     # print('is none')
+            #     announcement_alt= participating_team_soup.find('span',id="Results_by_round")
+            #     if announcement_alt:
+            #         announcement=announcement_alt.parent
+            #     else:
+            #         announcement_alt= participating_team_soup.find('span',id="Results_by_matchday")
+            #         if announcement_alt:
+            #             announcement=announcement_alt.parent
+            #         else:
+            #             # for 2010 2011 Premier League campaign resumed and it is so bad
+            #             # <span class="mw-headline" id="La_Liga">La Liga</span>
+            #             announcement_alt= participating_team_soup.find('span',attrs={'class':'mw-headline', 'id':league_name})
+            #             announcement=announcement_alt.parent
+            # else:
+            #     announcement=announcement[0]
             tags_after_announcement= announcement.find_next_siblings('div', class_="vevent")
             # print('return - ', return_dict)
             
