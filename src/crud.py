@@ -1,14 +1,15 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 from . import models, schemas
+from sqlalchemy import desc
 
 def get_seasons(db: Session, filterBy):
     if not filterBy:
-        seasons=db.query(models.Season).all() 
+        seasons=db.query(models.Season).order_by(desc(models.Season.created_at)).all()
     elif filterBy=="incomplete":
-        seasons= db.query(models.Season).filter(models.Season.isComplete==False).all()
+        seasons= db.query(models.Season).filter(models.Season.isComplete==False).order_by(desc(models.Season.created_at)).all()
     elif filterBy=="over-complete":
-        seasons=db.query(models.Season).filter(models.Season.overFilled==False).all()
+        seasons=db.query(models.Season).filter(models.Season.overFilled==False).order_by(desc(models.Season.created_at)).all()
     seasons_exc_fixtures=[{column.name: getattr(row, column.name) for column in row.__table__.columns if column.name!="fixtures"} for row in seasons]
     # seasons_exc_fixtures=[{k: v for k, v in row.items() if k != 'fixtures'} for row in seasons_exc_fixtures]
     return seasons_exc_fixtures
@@ -35,6 +36,7 @@ def update_season_visits(db: Session, league:str, year:str):
         else:
             season_exists.noOfVisits=1
         db.commit()
+        db.refresh(season_exists)
         return "done"
     except NoResultFound:
         return None
@@ -48,6 +50,7 @@ def update_season(db: Session, league:str, year:str, isComplete: bool, overFille
         season_exists.overFilled =overFilled
         season_exists.remainingFixtures = remainingFixtures
         db.commit()
+        db.refresh(season_exists)
         return "done"
     except NoResultFound:
         return None

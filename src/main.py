@@ -22,7 +22,9 @@ def get_db():
         db=SessionLocal()
         yield db
     finally:
+        db.rollback()
         db.close()
+
 
 
 app.include_router(season_routes.router, prefix="/seasons", tags=["Seasons"])
