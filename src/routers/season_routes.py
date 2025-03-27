@@ -172,13 +172,13 @@ def get_league_info(season_data: schemas.Season):
 @router.post("/get-new-league-info")
 def get_new_league_info(season_data: schemas.NewSeason):
     season_data= json.loads(season_data.model_dump_json())
-    # print(season_data.keys())
+    print(season_data.keys())
     try:
         possible_leagues=['epl', 'la liga', 'serie a']
         # 2022-23
         possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
 
-        # print(possible_years,possible_leagues)
+        print(possible_years,possible_leagues)
         
         if not bool(season_data) or not bool(season_data['league']) or not bool(season_data['year']):
             return JSONResponse(
@@ -190,7 +190,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
                 status_code=400,
                 content={"error":{"message": "Invalid league data"}}
             )     
-            # print('req ',season_data['league'])
+            print('req ',season_data['league'])
                 
         if season_data['year'] not in possible_years:
             return JSONResponse(
@@ -199,7 +199,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
             )    
         # league_input, year_input= season_data['league'], season_data['year']
         participating_teams=season_data["participating_teams"]
-        
+        print(participating_teams)
         db = SessionLocal()
         teams_in_fixtures_for_duplicates=[]
         match_summaries=[]
