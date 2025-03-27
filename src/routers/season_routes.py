@@ -190,7 +190,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
                 status_code=400,
                 content={"error":{"message": "Invalid league data"}}
             )     
-            if(season_data['league')]:
+            if(season_data['league']):
                 print('no data on league')
                 print(season_data['league'])
             else:
