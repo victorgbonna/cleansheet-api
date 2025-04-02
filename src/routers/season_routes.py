@@ -214,10 +214,10 @@ def get_new_league_info(season_data: schemas.NewSeason):
                 non_wiki_teams.append(return_dict["non_wiki_team"])
             print('passed non_wiki')
             if return_dict["fixture_in_duplicates"] is not None:
-                teams_in_fixtures_for_duplicates+=return_dict["fixture_in_duplicates"]
+                teams_in_fixtures_for_duplicates.append(return_dict["fixture_in_duplicates"])
             print('passed dupli')
             if return_dict["match_summary"] is not None:
-                match_summaries+=return_dict["match_summary"]
+                match_summaries.append(return_dict["match_summary"])
             print('passed match')
         # return {
         #     "data":{
