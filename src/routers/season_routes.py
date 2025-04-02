@@ -208,7 +208,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
             print('pased here-',index)
             # return
             return_dict=utils.get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_duplicates, league=season_data['league'])
-            print('return_dict -', return_dict)
+            print(return_dict)
             if return_dict["non_wiki_team"] is not None:
                 print('non_wiki_team', return_dict["non_wiki_team"])
                 non_wiki_teams.append(return_dict["non_wiki_team"])
