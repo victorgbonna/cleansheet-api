@@ -277,7 +277,7 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
             if len(announcement)==0:
                 if len(announcement_collection)>1:
                     announcement=[tag for tag in announcement_collection if len(tag.text)<300]
-            announcement= announcement[0]
+                    announcement= announcement[0]
             #     # epl 2018 19 needed len adjustments, from 80 to 90 both 2017 18
             # print('tag length ', len(announcement))
             # print('tag', announcement)
