@@ -267,8 +267,8 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
             # if len(announcement_collection)>1:
             #     announcement=[tag for tag in announcement_collection if len(tag.text)<300]
             #     # epl 2018 19 needed len adjustments, from 80 to 90 both 2017 18
-            # # print('tag length ', len(announcement))
-            # # print('tag', announcement)
+            print('tag length ', len(announcement))
+            print('tag', announcement)
 
             # if len(announcement)==0:
             #     print('no announcement')
@@ -293,16 +293,18 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
             # print(tags_after_announcement)
         except Exception as e:
             print(e)
+            print('error here')
             return_dict={**return_dict, "non_wiki_team":participating_team_dict['team_name']}
             # non_wiki_teams.append(participating_team_dict['team_name'])
-            # print(participating_team_dict['team_name']+' non wiki team')
+            print(participating_team_dict['team_name']+' non wiki team')
             # print('return - ', return_dict)
             
             return return_dict
         if len(tags_after_announcement)==0:
+            print('length of tag is 0')
             return_dict={**return_dict, "non_wiki_team":participating_team_dict['team_name']}
             return return_dict
-            # print('return - ', return_dict)
+            print('return - ', return_dict)
         
         match_summary_for_team=[]
         fixtures_for_duplicates_for_team=[]
@@ -311,7 +313,7 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
 
             h2h= [team.find('b').text.strip() for team in event_table.find_all('td', attrs={'class':'vcard attendee'})]
             h2h_to_string=' vs '.join(h2h)
-            # print(h2h)
+            print(h2h)
 
             if(h2h_to_string in teams_in_fixtures_for_duplicates):
                 continue
