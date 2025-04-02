@@ -252,6 +252,7 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
     return_dict={"non_wiki_team":None,  "fixture_in_duplicates":None, "match_summary":None}
     # print('return - ', return_dict)
     try:
+        print(season_url)
         participating_team_soup=bs(req.get(season_url).text, 'html.parser')
         [code_with_headXscript.extract() for code_with_headXscript in participating_team_soup.find_all(['head', 'script', 'footer'])]
         # print(participating_team_soup)
