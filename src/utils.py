@@ -260,16 +260,27 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
         # pattern = re.compile(r'The league fixtures were announced on', re.IGNORECASE)
         try:
             announcement_collection=participating_team_soup.find_all(lambda tag: tag.name == 'p' and 'league fixtures' in tag.text.lower())
-            print(announcement_collection)
-            print([len(tag) for tag in announcement_collection])
+            # print(announcement_collection)
+            # print([len(tag) for tag in announcement_collection])
             announcement=[]
-            announcement_alt= participating_team_soup.find('span',attrs={'class':'mw-headline', 'id':league_name})
-            announcement=announcement_alt.parent
-            # if len(announcement_collection)>1:
-            #     announcement=[tag for tag in announcement_collection if len(tag.text)<300]
+            # announcement_alt= participating_team_soup.find('span',attrs={'class':'mw-headline', 'id':league_name})
+            announcement_alt_latest=participating_team_soup.find('h4', attrs={'id':"Matches"})
+            
+            if announcement_alt_latest is not None:
+                announcement=announcement_alt_latest.parent
+                
+            # if(announcement_alt and len(announcement_collection)==0):
+            #     announcement=announcement_alt.parent
+            # if(len(announcement_collection)>0):
+            #     announcement= announcement_collection
+            # if(announcement)
+            if len(announcement)==0:
+                if len(announcement_collection)>1:
+                    announcement=[tag for tag in announcement_collection if len(tag.text)<300]
+            announcement= announcement[0]
             #     # epl 2018 19 needed len adjustments, from 80 to 90 both 2017 18
-            print('tag length ', len(announcement))
-            print('tag', announcement)
+            # print('tag length ', len(announcement))
+            # print('tag', announcement)
 
             # if len(announcement)==0:
             #     print('no announcement')
