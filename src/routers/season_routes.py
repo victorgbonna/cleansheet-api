@@ -48,7 +48,7 @@ def search_league_info(season_data: schemas.Season):
         # try:
         possible_leagues=['epl', 'la liga', 'serie a']
         # 2022-23
-        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2025)]
 
         print(possible_years,possible_leagues)
         
@@ -114,7 +114,7 @@ def get_league_info(season_data: schemas.Season):
     try:
         possible_leagues=['epl', 'la liga', 'serie a']
         # 2022-23
-        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2025)]
         # season_data= json.loads(season_data.model_dump_json())
 
         # print(possible_years,possible_leagues)
@@ -176,7 +176,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
     try:
         possible_leagues=['epl', 'la liga', 'serie a']
         # 2022-23
-        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2025)]
 
         print(possible_years,possible_leagues)
         
@@ -296,7 +296,7 @@ def update_league_info(season_data: schemas.UpdateSeason):
     try:
         possible_leagues=['epl', 'la liga', 'serie a']
         # 2022-23
-        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2025)]
         if not bool(season_data) or not bool(season_data['league']) or not bool(season_data['year']):
             return JSONResponse(
                 status_code=400,
@@ -356,7 +356,7 @@ def update_season_csv_url(season_data: schemas.UpdateSeasonUrl):
     try:
         possible_leagues=['epl', 'la liga', 'serie a']
         # 2022-23
-        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2023)]
+        possible_years=[str(season)+'–'+str(season+1)[2:] for season in range(2000,2025)]
         if not bool(season_data) or not bool(season_data['league']) or not bool(season_data['year']):
             return JSONResponse(
                 status_code=400,
