@@ -189,7 +189,9 @@ def get_teams_for_that_season(season_input, comp):
         # print(season_url, year_season_ended)
         season_page_to_soup= bs(season_page.text,'html.parser')
 
-
+        print(season_url)
+        print(season_page.status_code)
+        print(season_page_to_soup.title)
         table_section= season_page_to_soup.find('h2', attrs={"id":"League_table"}).find_next('table')
         teams_table_data = [th for th in season_page_to_soup.find_all('th') if len(th.contents) and len(th.contents)!=0 and th.find('a') == th.contents[0]]
         # teams_table_data = [th for th in season_page_to_soup.find_all('th')]
