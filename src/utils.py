@@ -272,8 +272,8 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
         season_page_to_soup= bs(team_page.text,'html.parser')
 
         # print(season_url)
-        print(team_page.status_code)
-        print(team_page_to_soup.title)
+        # print(season_page_to_soup_page.status_code)
+        print(season_page_to_soup.title)
         # table_section= season_page_to_soup.find('h2', attrs={"id":"League_table"}).find_next('table')
 
         # print(season_url)
