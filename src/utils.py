@@ -269,7 +269,7 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
         # print(season_url)
         # https://en.wikipedia.org/wiki/2011%E2%80%9312_Premier_League
         team_page=req.get(season_url, headers=headers)
-        season_page_to_soup= bs(season_page.text,'html.parser')
+        season_page_to_soup= bs(team_page.text,'html.parser')
 
         print(season_url)
         print(season_page.status_code)
