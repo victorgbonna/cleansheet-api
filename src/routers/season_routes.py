@@ -217,6 +217,7 @@ def get_new_league_info(season_data: schemas.NewSeason):
                 teams_in_fixtures_for_duplicates+=return_dict["fixture_in_duplicates"]
             print('passed dupli')
             if return_dict["match_summary"] is not None:
+                print('match', return_dict["match_summary"])
                 match_summaries+=return_dict["match_summary"]
             print('passed match')
         # return {

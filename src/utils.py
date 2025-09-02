@@ -260,7 +260,15 @@ def get_participating_team_scores(participating_team_dict,teams_in_fixtures_for_
     # print('return - ', return_dict)
     try:
         print(season_url)
-        participating_team_soup=bs(req.get(season_url).text, 'html.parser')
+         headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/122.0.0.0 Safari/537.36"
+        }
+
+        # print(season_url)
+        # https://en.wikipedia.org/wiki/2011%E2%80%9312_Premier_League
+        participating_team_soup=bs(req.get(season_url, headers=headers).text, 'html.parser')
         [code_with_headXscript.extract() for code_with_headXscript in participating_team_soup.find_all(['head', 'script', 'footer'])]
         # print(participating_team_soup)
         # print('\n')
