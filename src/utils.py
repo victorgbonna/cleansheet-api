@@ -182,10 +182,15 @@ def get_teams_for_that_season(season_input, comp):
         season_url+=quote(season_input)+'_Serie_A'
     # visit the site and extract the teams and their URL
     try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/122.0.0.0 Safari/537.36"
+        }
 
         # print(season_url)
         # https://en.wikipedia.org/wiki/2011%E2%80%9312_Premier_League
-        season_page=req.get(season_url)
+        season_page=req.get(season_url, headers=headers)
         # print(season_url, year_season_ended)
         season_page_to_soup= bs(season_page.text,'html.parser')
 
